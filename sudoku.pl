@@ -17,7 +17,7 @@ sudoku(Input, Solution) :-
 	write('get squares'), nl,
 	get_squares(Solution, Squares),
 	write('constrain all squares'), nl,
-	constrain_all_squares(Solution),
+	constrain_all_squares(Squares),
 	write('constrain given input'), nl,
 	constrain_given_input(Input, Solution).
 	
@@ -29,7 +29,7 @@ constrain_given_input([InH|InT], [SolH|SolT]) :-
 constrain_row_given_input([], []) :- !.
 constrain_row_given_input([InH|InT], [SolH|SolT]) :-
 	(InH #= 0; 
-	SolH #= InH),
+	SolH #= InH) ,
 	constrain_row_given_input(InT, SolT).
 		
 
@@ -47,7 +47,7 @@ constrain_between_individual_rows([], []).
 constrain_between_individual_rows([X|Xs], [Y|Ys]) :-
 	X #\= Y.
 
-constrain_all_squares([]).
+constrain_all_squares([]) :- !.
 constrain_all_squares([H|Rest]) :-
 		constrain_nine(H),
 		constrain_all_squares(Rest).
@@ -60,7 +60,7 @@ get_squares(Rows, Squares) :-
 	%write('Rows: '), write(Rows), nl,
 	%write('First3: '), write(First3), nl,
 	%write('Squares1:'), write(Squares1), nl,
-	%get_squares(Rest, Squares2),
+	get_squares(Rest, Squares2),
 	%write('Squares2:'), write(Squares2), nl,
 	append(Squares1, Squares2, Squares).
 	
@@ -98,8 +98,8 @@ constrain_nine(SetOfNine) :-
 	
 length_all_elems([], _).
 length_all_elems([H|T], N) :-
-        length(H, N),
-        length_all_elems(T, N).
+	length(H, N),
+	length_all_elems(T, N).
 		
 pretty_print([]).
 pretty_print([H|T]) :-
