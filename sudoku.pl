@@ -1,107 +1,46 @@
-% sudoku
-% solved using constraint programming
-% 
-% run as: sudoku(+Input, -Solution).
 :- use_module(library(clpfd)).
 
-solve(Input) :-
-	sudoku(Input, Solution),
-	pretty_print(Solution).
+solve(P):-
+    sudoku(P),
+    forall(member(R,P), (print(R),nl)).
 
-sudoku(Input, Solution) :-
-	write('begin'), nl,
-	length(Solution, 9),
-	length_all_elems(Solution, 9),
-	write('constrain all rows'), nl,
-	constrain_all_rows(Solution),
-	write('get squares'), nl,
-	get_squares(Solution, Squares),
-	write('constrain all squares'), nl,
-	constrain_all_squares(Squares),
-	write('constrain given input'), nl,
-	constrain_given_input(Input, Solution).
+sudoku(Input):-
+	rows(Input),
+	transpose(Input, TransInput),
+	rows(TransInput),
+	squares(Input),
+	all1To9(Input).
 	
-constrain_given_input([], []) :- !.
-constrain_given_input([InH|InT], [SolH|SolT]) :-
-	constrain_row_given_input(InH, SolH),
-	constrain_given_input(IntT, SolT).
-
-constrain_row_given_input([], []) :- !.
-constrain_row_given_input([InH|InT], [SolH|SolT]) :-
-	(InH #= 0; 
-	SolH #= InH) ,
-	constrain_row_given_input(InT, SolT).
-		
-
-constrain_all_rows([]).
-constrain_all_rows([X|Xs]) :-
-	constrain_nine(X),
-	constrain_between_rows(X, Xs).
-
-constrain_between_rows(_, []).
-constrain_between_rows(X, [Y|Ys]) :-
-	constrain_between_individual_rows(X, Y),
-	constrain_between_rows(X, Ys).
+rows([]).
+rows([H|T]) :-
+	all_different(H),
+	rows(T).
 	
-constrain_between_individual_rows([], []).
-constrain_between_individual_rows([X|Xs], [Y|Ys]) :-
-	X #\= Y.
-
-constrain_all_squares([]) :- !.
-constrain_all_squares([H|Rest]) :-
-		constrain_nine(H),
-		constrain_all_squares(Rest).
-
-get_squares([], []) :- !.	
-get_squares(Rows, Squares) :-
-	get_first_three(Rows, First3, Rest),
-	get_squares_horizontally(First3, Squares1),
-	%write('Rest: '), write(Rest), nl,
-	%write('Rows: '), write(Rows), nl,
-	%write('First3: '), write(First3), nl,
-	%write('Squares1:'), write(Squares1), nl,
-	get_squares(Rest, Squares2),
-	%write('Squares2:'), write(Squares2), nl,
-	append(Squares1, Squares2, Squares).
+all1To9([]).
+all1To9([H|T]) :-
+	H ins 1..9,
+	all1To9(T),
+	label(H).
 	
-get_squares_horizontally([[]|_], []) :- !.
-get_squares_horizontally([Row1,Row2,Row3|_], Squares) :-
-	get_first_three(Row1, First1, Rest1),
-	get_first_three(Row2, First2, Rest2),
-	get_first_three(Row3, First3, Rest3),
-	%write('Row1: '), write(Row1), nl,
-	append(First1, First2, First12),
-	append(First12, First3, First123),
-	%write('First123: '), write(First123), nl,
-	append([Rest1], [Rest2], Rest12),
-	append(Rest12, [Rest3], Rest123),
-	%write('Rest123: '), write(Rest123), nl,
-	%write('RestSquares: '), write(RestSquares), nl,
-	get_squares_horizontally(Rest123, RestSquares),
-	append([First123], RestSquares, Squares).
+squares([[A1,B1,C1,D1,E1,F1,G1,H1,I1],
+        [A2,B2,C2,D2,E2,F2,G2,H2,I2],
+        [A3,B3,C3,D3,E3,F3,G3,H3,I3],
+        [A4,B4,C4,D4,E4,F4,G4,H4,I4],
+        [A5,B5,C5,D5,E5,F5,G5,H5,I5],
+        [A6,B6,C6,D6,E6,F6,G6,H6,I6],
+        [A7,B7,C7,D7,E7,F7,G7,H7,I7],
+        [A8,B8,C8,D8,E8,F8,G8,H8,I8],
+        [A9,B9,C9,D9,E9,F9,G9,H9,I9]]) :-
+  
+    % Squares
+    all_different([A1,A2,A3,B1,B2,B3,C1,C2,C3]),
+    all_different([D1,D2,D3,E1,E2,E3,F1,F2,F3]),
+    all_different([G1,G2,G3,H1,H2,H3,I1,I2,I3]),
 
-	
-		
-get_first_three([], [], []).
-get_first_three([H1,H2,H3|T], [H1,H2,H3], T).
+    all_different([A4,A5,A6,B4,B5,B6,C4,C5,C6]),
+    all_different([D4,D5,D6,E4,E5,E6,F4,F5,F6]),
+    all_different([G4,G5,G6,H4,H5,H6,I4,I5,I6]),
 
-constrain_all_rows([]).
-constrain_all_rows([X|Xs]) :-
-	constrain_nine(X),
-	constrain_all_rows(Xs).
-	
-constrain_nine(SetOfNine) :-
-	length(SetOfNine, 9),
-	SetOfNine ins 1..9,
-	all_different(SetOfNine),
-	label(SetOfNine).
-	
-length_all_elems([], _).
-length_all_elems([H|T], N) :-
-	length(H, N),
-	length_all_elems(T, N).
-		
-pretty_print([]).
-pretty_print([H|T]) :-
-	write(H), nl,
-	pretty_print(T).
+    all_different([A7,A8,A9,B7,B8,B9,C7,C8,C9]),
+    all_different([D7,D8,D9,E7,E8,E9,F7,F8,F9]),
+    all_different([G7,G8,G9,H7,H8,H9,I7,I8,I9]).
